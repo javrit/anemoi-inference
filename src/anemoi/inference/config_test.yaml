@@ -1,0 +1,85 @@
+description: None
+
+checkpoint: /project/home/p200177/DE_371/avritj/experiments_anemoi/training/output/checkpoint/268a89c30eb347aaba8605e164193ce3/last.ckpt
+# """A path to an Anemoi checkpoint file."""
+
+runner:
+  external_graph: 
+    graph: /project/home/p200177/DE_371/avritj/graph_AROME_full.pt
+# """The runner to use. For runners that take extra options, they can be passed here in dictionary format with the runner name as the top level dictionary key. For example, if using `parallel`, the `cluster` option can be set here."""
+
+lead_time: 6
+# """The lead time for the forecast. This can be a string, an integer or a timedelta object.
+# If an integer, it represents a number of hours. Otherwise, it is parsed by :func:`anemoi.utils.dates.as_timedelta`.
+# """
+date: 2024-03-03
+name: None
+# """Used by prepml."""
+# 
+verbosity: 0
+# """The verbosity level of the runner. This can be 0 (default), 1, 2 or 3."""
+
+use_profiler: False
+# """If True, the inference will be profiled, producing time and memory report."""
+
+input: 
+  dataset: /project/home/p200177/DE_371/datasets/arome-an-oper-titan-0p025-2020-2024-1h-v4-eurw-precip6/arome-an-oper-titan-0p025-2020-2024-1h-v4-eurw-precip6/arome-an-oper-titan-0p025-2020-2024-1h-v4-eurw-precip6.zarr
+output: "printer"
+
+pre_processors: []
+post_processors: []
+
+# """Where to find the dinamic forcings. (default is input)"""
+
+# """Where to find the constant forcings (default to input)."""
+
+# """
+# The device on which the model should run. This can be "cpu", "cuda" or any other value supported by PyTorch.
+# If None, the device will be automatically detected using :func:`anemoi.inference.device.get_available_device`.
+# """
+
+# """The precision in which the model should run. If not provided, the model will use the precision used during training."""
+
+
+# - If None (default), the model will check for NaNs in the input. If NaNs are found, the model issue a warning and `allow_nans` to True.
+# - If False, the model will raise an exception if NaNs are found in the input and output.
+# - If True, the model will allow NaNs in the input and output.
+# """
+
+use_grib_paramid: False
+# """If True, the runner will use the grib parameter ID when generating MARS requests."""
+
+write_initial_state: True
+# """Wether to write the initial state to the output file. If the model is multi-step, only fields at the forecast reference date are
+# written.
+# """
+
+initial_state_categories: ["prognostics", "constant_forcings"]
+# """A list of categories to use when writing step zero."""
+
+# """The frequency at which to write the output. This can be a string or an integer. If a string, it is parsed by :func:`anemoi.utils.dates.as_timedelta`."""
+
+env: {}
+# """Environment variables to set before running the model. This may be useful to control some packages
+# such as `eccodes`. In certain cases, the variables mey be set too late, if the package for which they are intended
+# is already loaded when the runner is configured.
+# """
+
+patch_metadata: {}
+# """A dictionary of metadata to patch the checkpoint metadata with. This is used to test new features or to work around
+# issues with the checkpoint metadata.
+# """
+
+development_hacks: {}
+# """A dictionary of development hacks to apply to the runner. This is used to test new features or to work around."""
+
+# trace_path: /project/home/p200177/DE_371/avritj/experiments_anemoi/inference/debugging/
+# """A path to a directory where to store the trace of the runner. This is useful to debug the runner."""
+
+debugging_info: {}
+# """A dictionary to store debug information. This is ignored."""
+
+preload_checkpoint: False
+# """Whether to read the checkpoint file from disk before loading the model."""
+
+# """Size of the buffer to use when preloading the checkpoint file, in bytes. Default is 32 MB."""

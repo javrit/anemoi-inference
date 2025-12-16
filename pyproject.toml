@@ -42,8 +42,13 @@ classifiers = [
 
 dynamic = [ "version" ]
 dependencies = [
-  "anemoi-transform>0.1.13",
-  "anemoi-utils[provenance,text]>=0.4.32",
+  "anemoi-datasets>=0.5.13",
+  "anemoi-transform==0.1.18",
+  "anemoi-models[migrations]",
+  "anemoi-utils[provenance,text]==0.4.38",
+  "anemoi-training",
+  "anemoi-models[migrations] @ git+https://github.com/javrit/anemoi-core.git@067380f851a8b440e38fae37025a4613636a2956#subdirectory=models",
+  "anemoi.graphs==0.7.1",
   "aniso8601",
   "anytree",
   "deprecation",
@@ -57,7 +62,9 @@ dependencies = [
   "rich",
   "semantic-version",
   "torch",
+  "torch-geometric>=2.7.0",
 ]
+
 
 optional-dependencies.all = [
   "anemoi-datasets",
@@ -102,8 +109,11 @@ scripts.anemoi-inference = "anemoi.inference.__main__:main"
 
 entry-points."ai_models.model".anemoi = "anemoi.inference.plugin:AIModelPlugin"
 
+
+
 [tool.setuptools.package-data]
 "anemoi.inference.grib.templates" = [ "*.yaml" ]
+
 
 [tool.setuptools.packages.find]
 where = [ "src" ]
