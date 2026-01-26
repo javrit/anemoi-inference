@@ -110,7 +110,6 @@ class PlotOutput(Output):
             output_frequency=output_frequency,
             write_initial_state=write_initial_state,
         )
-
         self.dir = dir
         self.format = format
         self.variables = variables
@@ -133,7 +132,6 @@ class PlotOutput(Output):
 
         if self.schema:
             ekp.schema.use(self.schema)
-
         longitudes = fix(state["longitudes"])
         latitudes = state["latitudes"]
         date = state["date"]
@@ -182,3 +180,5 @@ class PlotOutput(Output):
 
         fig.save(fname)
         del fig
+
+    # def enrich_prev(self, state: State) -> None:

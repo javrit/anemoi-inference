@@ -47,7 +47,7 @@ dependencies = [
   "anemoi-models[migrations]",
   "anemoi-utils[provenance,text]==0.4.38",
   "anemoi-training",
-  "anemoi-models[migrations] @ git+https://github.com/javrit/anemoi-core.git@067380f851a8b440e38fae37025a4613636a2956#subdirectory=models",
+  "anemoi-models[migrations]",
   "anemoi.graphs==0.7.1",
   "aniso8601",
   "anytree",

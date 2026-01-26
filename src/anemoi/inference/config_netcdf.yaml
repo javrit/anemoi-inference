@@ -1,6 +1,6 @@
 description: None
 
-checkpoint: /project/home/p200177/DE_371/avritj/experiments_anemoi/inference/checkpoints/sigmamin0.ckpt
+checkpoint: /project/home/p200177/DE_371/angeliquebonamy/anemoi/outputs_incond_x_0_probabilistic_low_noise/checkpoint/73f7278e180543469b320e3311bfff27/inference-last.ckpt
 # checkpoint: /project/home/p200177/DE_371/avritj/experiments_anemoi/training/output/checkpoint/701613f37ab0461686b2135488d00289/inference-last.ckpt
 # """A path to an Anemoi checkpoint file."""
 
@@ -25,15 +25,15 @@ use_profiler: false
 
 input: 
   dataset: /project/home/p200177/DE_371/datasets/arome-an-oper-titan-0p025-2020-2024-1h-v4-eurw-precip6/arome-an-oper-titan-0p025-2020-2024-1h-v4-eurw-precip6/arome-an-oper-titan-0p025-2020-2024-1h-v4-eurw-precip6.zarr
-output: 
-  plot:
-    variables: ["10u", "10v", "2t"]
-    format: png
-    template: "plot_x_not_zero{date}.{format}"
-    dir: /project/home/p200177/DE_371/avritj/experiments_anemoi/inference/plots
+# output: 
+#   plot:
+#     variables: ["10u", "10v", "2t"]
+#     format: png
+#     template: "plot_10steps_test_{date}.{format}"
+#     dir: /project/home/p200177/DE_371/avritj/experiments_anemoi/inference/plots
 
-# output:
-#   netcdf:  /project/home/p200177/DE_371/avritj/experiments_anemoi/inference/plots/SDEdit_5steps.nc
+output:
+  netcdf:  /project/home/p200177/DE_371/avritj/experiments_anemoi/inference/netcdf_files/uncond_sample_lownoise.nc
 pre_processors: []
 post_processors: []
 use_grib_paramid: False
