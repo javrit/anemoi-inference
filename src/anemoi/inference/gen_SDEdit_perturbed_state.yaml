@@ -1,0 +1,53 @@
+description: None
+
+checkpoint: path/to/inference-checkpoint.ckpt
+
+runner:
+  sdedit_scoring:
+    noise_scheduler_params:
+      schedule_type: "karras"
+      sigma_max: 1000
+      sigma_min: 0.02
+      rho: 7.0
+      num_steps: 100 
+      num_steps_sdedit: 12 # number of steps
+      SDEdit: True # Activate SDEdit method 
+    sampler_params:
+      sampler: "heun"
+      S_churn: 2.5
+      S_min: 0.75
+      S_max: 1000
+      S_noise: 1.05
+    condition_files:
+      mean_point: path/to/mean_point.npy
+      mean_vars: path/to/mean_vars.npy
+      std_vars: path/to/std_vars.npy
+      
+lead_time: ???
+
+date: ???
+
+input: 
+
+  dataset: path/to/dataset.zarr
+
+output: 
+  tee:
+  - grib:
+      post_processors:
+        - backward_transform_filter:
+              filter: fill_square
+              fill_value: 9999
+              max_lon_output: 16.0 # value of AROME domain
+              min_lon_output: -12.0 # value of AROME domain
+              max_lat_output: 55.4 # value of AROME domain
+              min_lat_output: 37.5 # value of AROME domain
+      path: path/to/output.grib
+      templates:
+        file: path/to/template.grib
+      write_initial_state: false
+  - netcdf:  
+      path: path/to/output.nc
+      write_initial_state: false
+ 
+initial_state_categories: ["prognostics", "constant_forcings"]

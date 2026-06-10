@@ -6,14 +6,15 @@
 # In applying this licence, ECMWF does not waive the privileges and immunities
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
-
+import matplotlib.ticker as ticker
+from matplotlib.ticker import LinearLocator
 import logging
 from pathlib import Path
-
+import math
 import numpy as np
 from anemoi.utils.grib import shortname_to_paramid
 from anemoi.utils.grib import units
-
+import matplotlib.ticker as ticker
 from anemoi.inference.context import Context
 from anemoi.inference.decorators import ensure_dir
 from anemoi.inference.decorators import main_argument
@@ -21,6 +22,11 @@ from anemoi.inference.types import FloatArray
 from anemoi.inference.types import ProcessorConfig
 from anemoi.inference.types import State
 from anemoi.inference.utils.templating import render_template
+import earthkit.data as ekd
+import earthkit.plots as ekp
+import yaml
+from earthkit.plots._plugins import PLUGINS
+import numpy as np
 
 from ..output import Output
 from . import output_registry
@@ -119,33 +125,22 @@ class PlotOutput(Output):
         self.schema = schema
         self.kwargs = kwargs
 
-    def write_step(self, state: State) -> None:
-        """Write a step of the state.
-
-        Parameters
-        ----------
-        state : State
-            The state dictionary.
-        """
-        import earthkit.data as ekd
-        import earthkit.plots as ekp
-
+    def write_step(self, state: State, date=None) -> None:
         if self.schema:
             ekp.schema.use(self.schema)
+
         longitudes = fix(state["longitudes"])
         latitudes = state["latitudes"]
-        date = state["date"]
+        if date is None :
+            date = state["date"]
         basetime = date - state["step"]
 
         plotting_fields = []
-
         for name, values in state["fields"].items():
             if self.skip_variable(name):
                 continue
-
             variable = self.typed_variables[name]
             param = variable.param
-
             plotting_fields.append(
                 ekd.ArrayField(
                     values,
@@ -163,9 +158,24 @@ class PlotOutput(Output):
                     },
                 )
             )
+
         fig = ekp.quickplot(
-            ekd.FieldList.from_fields(plotting_fields), mode=self.mode, domain=self.domain, **self.kwargs
+            ekd.FieldList.from_fields(plotting_fields),
+            mode=self.mode,
+            domain=self.domain,
+            **self.kwargs
         )
+
+        import matplotlib.pyplot as plt
+        from matplotlib.ticker import LinearLocator
+
+        mpl_fig = fig.fig
+        for ax in mpl_fig.axes:
+            if ax.get_label() == '<colorbar>':
+                vmin, vmax = ax.get_xlim()
+                ticks = np.linspace(vmin, vmax, 5)
+                ax.xaxis.set_major_locator(plt.FixedLocator(ticks))
+
         fname = render_template(
             self.template,
             {
@@ -177,8 +187,5 @@ class PlotOutput(Output):
             },
         )
         fname = self.dir / fname
-
         fig.save(fname)
         del fig
-
-    # def enrich_prev(self, state: State) -> None:
