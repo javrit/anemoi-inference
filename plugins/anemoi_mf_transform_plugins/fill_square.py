@@ -1,0 +1,123 @@
+import logging
+
+import earthkit.data as ekd
+import numpy as np
+import tqdm
+from anemoi.transform.fields import (
+    new_field_from_latitudes_longitudes,
+    new_field_from_numpy,
+    new_fieldlist_from_list,
+)
+from anemoi.transform.filter import Filter
+
+LOG = logging.getLogger(__name__)
+
+
+class FillSquareGribs(Filter):
+    """A filter to recenter gribs at given coordinates
+    Fill the missing values with a default value.
+    """
+
+    # The version of the plugin API, used to ensure compatibility
+    # with the plugin manager.
+
+    api_version = "1.0.0"
+
+    # The schema of the plugin, used to validate the parameters.
+    # This is a Pydantic model.
+
+    schema = None
+
+    def __init__(
+        self,
+        fill_value=9999,
+        max_lon_output=16.0,
+        min_lon_output=-12.0,
+        max_lat_output=55.4,
+        min_lat_output=37.5,
+    ):
+        """Initialize the FillSquareGribs filter.
+        Parameters
+        ----------
+        fill_value : int
+            The default value to use to fill gribs
+        max_lon_output : float
+            The maximal longitude of the square
+        min_lon_output : float
+            The minimal longitude of the square
+        max_lat_output : float
+            The maximal latitude of the square
+        min_lat_output : float
+            The minimal latitude of the square
+        """
+
+        self.fill_value = fill_value
+        self.max_lon_output = max_lon_output
+        self.min_lon_output = min_lon_output
+        self.max_lat_output = max_lat_output
+        self.min_lat_output = min_lat_output
+
+    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
+        return data
+
+    def backward(self, data: ekd.FieldList) -> ekd.FieldList:
+        """Fill missing grid points with a default value in the fields.
+        The longitude step and the latitude step is supposed to be constant.
+         Parameters
+        ----------
+        fields : ekd.FieldList
+            List of fields to be processed.
+        Returns
+        -------
+        ekd.FieldList
+        """
+        first = data[0]
+        input_lon, input_lat = first.state["longitudes"], first.state["latitudes"]
+        input_data = first.to_numpy(flatten=True)
+        unique_lons = np.unique(input_lon)
+        unique_lats = np.unique(input_lat)
+
+        step_lon = unique_lons[1] - unique_lons[0]
+        step_lat = unique_lats[1] - unique_lats[0]
+        nb_lats_output = (
+            round((self.max_lat_output - self.min_lat_output) / step_lat) + 1
+        )
+        nb_lons_output = (
+            round((self.max_lon_output - self.min_lon_output) / step_lon) + 1
+        )
+
+        output_lon = np.tile(
+            np.arange(self.min_lon_output, self.max_lon_output + step_lon, step_lon),
+            nb_lats_output,
+        )
+        output_lat = np.repeat(
+            np.arange(
+                self.min_lat_output, self.max_lat_output + step_lat, nb_lats_output
+            ),
+            nb_lons_output,
+        )[::-1]
+
+        # Compute longitude and latitude idx in the input vector
+        # list_idx_output_lon = [0, 1, 2, ..., 1120, 0, 1, ..., 1120 ...]
+        list_idx_output_lon = np.rint(
+            (input_lon - self.min_lon_output) / step_lon
+        ).astype(int)
+        # latitude are reversed so the index is computed from the max
+        list_idx_output_lat = np.rint(
+            (self.max_lat_output - input_lat) / step_lat
+        ).astype(int)
+
+        result = []
+        for field in tqdm.tqdm(data, desc=f"Fill with {self.fill_value}"):
+            input_data = field.to_numpy(flatten=True)
+            output_data = np.ones((nb_lats_output, nb_lons_output)) * self.fill_value
+            output_data[list_idx_output_lat, list_idx_output_lon] = input_data
+            result.append(
+                new_field_from_latitudes_longitudes(
+                    new_field_from_numpy(output_data, template=field),
+                    latitudes=output_lat,
+                    longitudes=output_lon,
+                )
+            )
+
+        return new_fieldlist_from_list(result)
