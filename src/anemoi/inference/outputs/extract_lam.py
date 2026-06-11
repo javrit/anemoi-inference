@@ -1,242 +1,65 @@
 # (C) Copyright 2024 Anemoi contributors.
-
-
-
 #
-
-
 # This software is licensed under the terms of the Apache Licence Version 2.0
-
-
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
-
-
 #
-
-
 # In applying this licence, ECMWF does not waive the privileges and immunities
-
-
 # granted to it by virtue of its status as an intergovernmental organisation
-
-
 # nor does it submit to any jurisdiction.
-
-
-
-
 
 import logging
 
-
-
-
-
 import numpy as np
 
-
-
-
-
-from anemoi.inference.config import Configuration
-
-
-from anemoi.inference.context import Context
-
-
-from anemoi.inference.types import ProcessorConfig
-
-
-
-
-
+from ..output import Output
+from . import create_output
 from . import output_registry
-
-
-from .masked import MaskedOutput
-
-
-
-
 
 LOG = logging.getLogger(__name__)
 
 
-
-
-
-
-
-
 @output_registry.register("extract_lam")
+class ExtractLamOutput(Output):
+    """_summary_"""
 
+    def __init__(self, context, *, output, points="cutout_mask"):
+        super().__init__(context)
+        if isinstance(points, str):
+            mask = self.checkpoint.load_supporting_array(points)
+            points = -np.sum(mask)  # This is the global, we want the lam
 
-class ExtractLamOutput(MaskedOutput):
+        self.points = points
+        self.output = create_output(context, output)
 
+    def __repr__(self):
+        return f"ExtractLamOutput({self.points}, {self.output})"
 
-    """Extract LAM output class."""
+    def write_initial_state(self, state):
+        self.output.write_initial_state(self._apply_mask(state))
 
+    def write_state(self, state):
+        self.output.write_state(self._apply_mask(state))
 
+    def _apply_mask(self, state):
 
+        if self.points < 0:
+            # This is the global, we want the lam
+            self.points = state["latitudes"].size + self.points
 
+        state = state.copy()
+        state["fields"] = state["fields"].copy()
+        state["latitudes"] = state["latitudes"][: self.points]
+        state["longitudes"] = state["longitudes"][: self.points]
 
-    def __init__(
+        for field in state["fields"]:
+            data = state["fields"][field]
+            if data.ndim == 1:
+                data = data[: self.points]
+            else:
+                data = data[..., : self.points]
+            state["fields"][field] = data
 
+        return state
 
-        self,
-
-
-        context: Context,
-
-
-        *,
-
-
-        output: Configuration,
-
-
-        lam: str = "lam_0",
-
-
-        variables: list[str] | None = None,
-
-
-        post_processors: list[ProcessorConfig] | None = None,
-
-
-        output_frequency: int | None = None,
-
-
-        write_initial_state: bool | None = None,
-
-
-    ) -> None:
-
-
-        """Parameters
-
-
-        ----------
-
-
-        context : dict
-
-
-            The context dictionary.
-
-
-        output : dict
-
-
-            The output configuration dictionary.
-
-
-        lam : str, optional
-
-
-            The LAM identifier, by default "lam_0".
-
-
-        variables : list, optional
-
-
-            The list of variables to extract, by default None.
-
-
-        post_processors : Optional[List[ProcessorConfig]], default None
-
-
-            Post-processors to apply to the input
-
-
-        output_frequency : int, optional
-
-
-            The frequency of output, by default None.
-
-
-        write_initial_state : bool, optional
-
-
-            Whether to write the initial state, by default None.
-
-
-        """
-
-
-
-
-
-        if "cutout_mask" in context.checkpoint.supporting_arrays:
-
-
-            # Backwards compatibility
-
-
-            mask = context.checkpoint.load_supporting_array("cutout_mask")
-
-
-            points = slice(None, -np.sum(mask))
-
-
-        else:
-
-
-            if "lam_0" not in lam:
-
-
-                raise NotImplementedError("Only lam_0 is supported")
-
-
-
-
-
-            if "lam_1/cutout_mask" in context.checkpoint.supporting_arrays:
-
-
-                raise NotImplementedError("Only lam_0 is supported")
-
-
-
-
-
-            mask = context.checkpoint.load_supporting_array(f"{lam}/cutout_mask")
-
-
-
-
-
-            assert len(mask) == np.sum(mask)
-
-
-            points = slice(None, np.sum(mask))
-
-
-
-
-
-        super().__init__(
-
-
-            context,
-
-
-            mask=points,
-
-
-            output=output,
-
-
-            variables=variables,
-
-
-            post_processors=post_processors,
-
-
-            output_frequency=output_frequency,
-
-
-            write_initial_state=write_initial_state,
-
-
-        )
+    def close(self):
+        self.output.close()
