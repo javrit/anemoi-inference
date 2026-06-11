@@ -117,6 +117,7 @@ entry-points."ai_models.model".anemoi = "anemoi.inference.plugin:AIModelPlugin"
 
 [tool.setuptools.packages.find]
 where = [ "src" ]
+exclude = ["anemoi-transform*"]
 
 [tool.setuptools_scm]
 version_file = "src/anemoi/inference/_version.py"
