@@ -1,0 +1,64 @@
+[build-system]
+requires = [
+  "setuptools>=60",
+]
+
+[project]
+name = "anemoi-mf-transform-plugins"
+
+version = "0.1.0"
+description = "MF filter plugins for anemoi.transform"
+readme = { text = "MF filter plugins for anemoi.transform", content-type = "text/markdown" }
+
+keywords = [
+  "filter",
+  "transform",
+  "ai",
+  "tools",
+]
+
+license = { text = "Apache License Version 2.0" }
+authors = [
+  { name = "Clement Brochet", email = "clement.brochet@meteo.fr" },
+  { name = "Corentin Seznec", email = "corentin.seznec@meteo.fr" },
+  { name = "Benjamin Devillers", email = "benjamin.devillers@meteo.fr" },
+]
+requires-python = ">=3.11"
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
+]
+
+urls.Homepage = "https://github.com/ecmwf/anemoi-plugins"
+
+dependencies = [
+    "anemoi-transform>=0.1.23",
+    "earthkit-data",
+    "tqdm",
+    "numpy",
+]
+
+[dependency-groups]
+dev = [
+    "anemoi-mf-transform-plugins[datasets]",
+]
+
+
+[project.entry-points.'anemoi.transform.filters.fields']
+fill_square = "anemoi_mf_transform_plugins.fill_square:FillSquareGribs"
+unfill_square = "anemoi_mf_transform_plugins.unfill_square:UnfillSquareGribs"
+crop = "anemoi_mf_transform_plugins.crop:CropFilter"
+
+# For compatibility with anemoi-transform < 0.1.28
+[project.entry-points.'anemoi.transform.filters']
+fill_square = "anemoi_mf_transform_plugins.fill_square:FillSquareGribs"
+unfill_square = "anemoi_mf_transform_plugins.unfill_square:UnfillSquareGribs"
+crop = "anemoi_mf_transform_plugins.crop:CropFilter"
+set_member = "anemoi_mf_transform_plugins.set_member:SetMember"
