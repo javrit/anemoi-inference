@@ -43,12 +43,12 @@ output:
               min_lon_output: -12.0
               max_lat_output: 55.4
               min_lat_output: 37.5
-      path: /project/home/p200177/DE_371/avritj/experiments_anemoi/inference/grib/not_processed/SDEdit_{date}_test.grib
+      path: /project/home/p200177/DE_371/avritj/experiments_anemoi/inference/SDEdit_{date}_test.grib
       templates:
         file: /project/home/p200177/DE_371/resources/AROME_IA/template.grib
       write_initial_state: false
   - netcdf:  
-      path: /project/home/p200177/DE_371/avritj/experiments_anemoi/inference/grib/not_processed/SDEdit_{date}_test.nc # <- c'est ça qu'on change dans le slurm
+      path: /project/home/p200177/DE_371/avritj/experiments_anemoi/inference/SDEdit_{date}_test.nc # <- c'est ça qu'on change dans le slurm
       write_initial_state: true
  
 initial_state_categories: ["prognostics", "constant_forcings"]
