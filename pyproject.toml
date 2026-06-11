@@ -137,7 +137,3 @@ allow_redefinition = true
 path = [
   "/project/home/p200177/DE_371/datasets/arome-an-oper-titan-0p025-2020-2024-1h-v4-eurw-precip6/arome-an-oper-titan-0p025-2020-2024-1h-v4-eurw-precip6/arome-an-oper-titan-0p025-2020-2024-1h-v4-eurw-precip6.zarr"
 ]
-
-[tool.setuptools.packages.find]
-where = [ "src" ]
-exclude = ["plugins*"]
